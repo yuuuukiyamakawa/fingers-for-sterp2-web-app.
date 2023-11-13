@@ -98,7 +98,7 @@ if st.sidebar.button('音声認識と画像生成を開始'):
             state.write(f"{set_duration}秒間の音声を聞いています...") # 箱に案内表示書き込み
 
             # 音声認識
-            result_text = mic_speech_to_text(set_language,duration=set_duration)
+            result_text = mic_speech_to_text(set_language, set_duration)
             st.write("【音声認識結果】" )
             state.empty()  # 実行中表示の削除
             st.write(result_text)
@@ -111,17 +111,17 @@ if st.sidebar.button('音声認識と画像生成を開始'):
             st.write(summarized_text)
 
             # 翻訳
-            state = st.empty() 
-            state.write("英語に翻訳中...") # 箱に案内表示書き込み
-            state.empty()
+            state_summary = st.empty() 
+            state_summary.write("英語に翻訳中...") # 箱に案内表示書き込み
+            state_summary.empty()
             english_text = translate_to_english(summarized_text)
             if english_text:  # 翻訳されたテキストが存在する場合のみ
                 st.write("【翻訳結果（英語）】")
                 st.write(english_text)
 
             # 画像生成
-            state = st.empty() 
-            state.write("画像生成中...") # 箱に案内表示書き込み
+            state_image = st.empty() 
+            state_image.write("画像生成中...") # 箱に案内表示書き込み
             response = openai.Image.create(
             prompt='次の{文章}を画像で出力してください。'+
                     '\n'+'文章:"""'+
@@ -131,7 +131,7 @@ if st.sidebar.button('音声認識と画像生成を開始'):
             quality="standard",
             n=1,
             )
-            state.empty()
+            state_image.empty()
             # 生成した画像のURLを取得
             image_url = response['data'][0]['url']
 
