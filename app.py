@@ -7,7 +7,7 @@ from io import BytesIO
 import time
 
 # APIキー
-openai.api_key = "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"
+openai.api_key = ""
 
 # 言語選択と、APIが認識する言語の変換リストを作成
 set_language_list = {
@@ -63,13 +63,14 @@ def translate_to_english(output_content):
 
 # 画像生成と表示の関数
 def generate_and_display_image(english_text):
+    image_prompt = '次の{文章}を画像で出力してください。' + '\n'+'文章:"""' + '\n'+ english_text + '\n'+'"""'
     response = openai.Image.create(
-        prompt ='次の{文章}を画像で出力してください。'+
-                '\n'+'文章:"""'+
-                '\n'+ english_text +
-                '\n'+'"""',
-        size="256x256",
-        quality="standard",
+        model = "dall-e-3",
+        prompt = image_prompt,
+        # size="256x256",
+        # size="512x512",
+        size="1024x1024",
+        quality="hd",  # https://platform.openai.com/docs/guides/images/usage?lang=python&context=node
         n=1,
     )
     image_url = response['data'][0]['url']
