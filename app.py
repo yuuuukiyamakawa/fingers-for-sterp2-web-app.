@@ -63,7 +63,7 @@ def translate_to_english(output_content):
 
 # 画像生成と表示の関数
 def generate_and_display_image(english_text):
-    image_prompt = '次の{文章}を画像で出力してください。' + '\n'+'文章:"""' + '\n'+ english_text + '\n'+'"""'
+    image_prompt = '次の文章を画像で出力してください。' + '\n'+'文章:"""' + '\n'+ english_text + '\n'+'"""'
     response = openai.Image.create(
         model = "dall-e-3",
         prompt = image_prompt,
