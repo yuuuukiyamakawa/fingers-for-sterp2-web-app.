@@ -28,9 +28,11 @@ def mic_speech_to_text(set_language, set_duration):
         result_text = recognizer.recognize_google(audio, language=set_language_list[set_language])
     except Exception as e:
         print(f"エラー: {e}")  # https://chat.openai.com/share/f98603c0-e394-474f-8421-52d7ad7b3ae0
-        # 以下はテスト用で変更。
-        result_text = "ソフトバンクの代表として久々に公の場でスピーチします。今日は個人的な見解を交えながら、意義深いメッセージをお届けします。プレゼンテーションは約60ページ、話す時間は60分ですが、中でも2ページに特に重要な内容を凝縮しています。"
-        # result_text = "音声認識に失敗しました"
+        
+        result_text = "音声認識に失敗しました"
+        # 以下はテスト用で使用。
+        # result_text = "ソフトバンクの代表として久々に公の場でスピーチします。今日は個人的な見解を交えながら、意義深いメッセージをお届けします。プレゼンテーションは約60ページ、話す時間は60分ですが、中でも2ページに特に重要な内容を凝縮しています。"
+        
     return result_text # 戻り値
 
 # テキスト要約の関数
