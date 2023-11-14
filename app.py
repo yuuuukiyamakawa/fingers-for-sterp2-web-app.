@@ -27,13 +27,13 @@ def mic_speech_to_text(set_language, duration = set_duration):
     try:
         result_text = recognizer.recognize_google(audio, language=set_language_list[set_language])
     except Exception as e:
-        print(f"エラー: {e}")   # f は、Pythonの「フォーマット済み文字列リテラル」（f-string）を表しています。この機能はPython 3.6以降で利用できます。
-                               # f-stringを使用すると、波括弧 {} 内に変数や式を直接記述し、その結果を文字列に組み込むことができます。
-                               # 例えば、もし変数 e にエラーメッセージが格納されている場合、print(f"エラー: {e}") はそのエラーメッセージを含む文字列を出力します。
-        # 以下はテスト用で変更。
-        result_text = "ソフトバンクの代表として久々に公の場でスピーチします。今日は個人的な見解を交えながら、意義深いメッセージをお届けします。プレゼンテーションは約60ページ、話す時間は60分ですが、中でも2ページに特に重要な内容を凝縮しています。"
-        # result_text = "音声認識に失敗しました"
-    return result_text
+        print(f"エラー: {e}")  # https://chat.openai.com/share/f98603c0-e394-474f-8421-52d7ad7b3ae0
+        
+        result_text = "音声認識に失敗しました"
+        # 以下はテスト用で使用。
+        # result_text = "ソフトバンクの代表として久々に公の場でスピーチします。今日は個人的な見解を交えながら、意義深いメッセージをお届けします。プレゼンテーションは約60ページ、話す時間は60分ですが、中でも2ページに特に重要な内容を凝縮しています。"
+        
+    return result_text # 戻り値
 
 # テキスト要約の関数
 def summarize_text(result_text):
