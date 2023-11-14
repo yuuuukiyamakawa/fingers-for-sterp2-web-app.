@@ -20,10 +20,10 @@ set_language = "日本語"  # デフォルトの言語
 set_duration = 30  # デフォルトの１回当たりの録音時間
 
 # 音声認識の関数
-def mic_speech_to_text(set_language, set_duration):
+def mic_speech_to_text(set_language, duration = set_duration):
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
-        audio = recognizer.record(source, duration = set_duration)  # durationパラメータでリッスンする時間を設定
+        audio = recognizer.record(source, duration = duration)  # durationパラメータでリッスンする時間を設定
     try:
         result_text = recognizer.recognize_google(audio, language=set_language_list[set_language])
     except Exception as e:
@@ -45,40 +45,36 @@ def summarize_text(result_text):
         ],
         max_tokens = 100  # 最大トークン数
     )
-    
-    output_content = response.choices[0]["message"]["content"].strip() # 返って来たレスポンスの内容はresponse.choices[0]["message"]["content"].strip()に格納されているので、これをoutput_contentに代入
-    return output_content # 戻り値
+    # 返って来たレスポンスの内容はresponse.choices[0]["message"]["content"].strip()に格納されているので、これをoutput_contentに代入
+    output_content = response.choices[0]["message"]["content"].strip()
+    return output_content # 返って来たレスポンスの内容を返す
 
 # テキスト翻訳の関数
-def translate_to_english(output_content):
+def translate_to_english(output_content):  # text → output_content
     response = openai.ChatCompletion.create(
         model = "gpt-3.5-turbo",
         messages = [
             {"role": "system", "content": "以下の日本語のテキストを英語に翻訳してください:"},
-            {"role": "user", "content": output_content},
+            {"role": "user", "content": output_content},  # text → output_content
         ],
         max_tokens=100
     )
 
     english_text = response.choices[0]["message"]["content"].strip()
-    return english_text # 戻り値
+    return english_text
 
 # 画像生成と表示の関数
 def generate_and_display_image(english_text):
-    image_prompt = '次の文章を画像で出力してください。' + '\n'+'文章:"""' + '\n'+ english_text + '\n'+'"""'
     response = openai.Image.create(
-        model = "dall-e-3",
-        prompt = image_prompt,
-        # size="256x256",
-        # size="512x512",
-        size="1024x1024",
-        quality="hd",  # https://platform.openai.com/docs/guides/images/usage?lang=python&context=node
+        prompt=english_text,
+        size="256x256",
+        quality="standard",
         n=1,
     )
     image_url = response['data'][0]['url']
     response = requests.get(image_url)
     image = Image.open(BytesIO(response.content))
-    return image # 戻り値
+    st.image(image)
 
 # Streamlit表示
 st.title("スピードグラレコアプリ") # タイトル
@@ -93,44 +89,56 @@ st.sidebar.write("マイクでの音声認識はこちらのボタンから") # 
 
 # アプリ起動部
 if st.sidebar.button('音声認識と画像生成を開始'):
-    st.session_state['output_history'] = []  # 出力を保存するリスト https://chat.openai.com/share/bdd7eccc-5fe5-4641-8a2f-29bb237b8023
+    # if 'output_history' not in st.session_state:
+        st.session_state['output_history'] = []  # 出力を保存するリスト　https://chat.openai.com/share/bdd7eccc-5fe5-4641-8a2f-29bb237b8023
 
-    # 音声認識と画像生成の処理
-    for i in range(total_record_count):
+        # 音声認識と画像生成の処理        
+        for i in range(total_record_count):
+            state = st.empty() # マイク録音中を示す為の箱を準備
+            state.write(f"{set_duration}秒間の音声を聞いています...") # 箱に案内表示書き込み
 
-        # 音声認識
-        state = st.empty() # マイク録音中を示す為の箱を準備
-        state.write(f"{set_duration}秒間の音声を聞いています...") # 箱に案内表示書き込み
-        result_text = mic_speech_to_text(set_language, set_duration)
-        st.write("【音声認識結果】" )
-        state.empty()  # 実行中表示の削除
-        st.write(result_text)
+            # 音声認識
+            result_text = mic_speech_to_text(set_language, set_duration)
+            st.write("【音声認識結果】" )
+            state.empty()  # 実行中表示の削除
+            st.write(result_text)
 
-        # 要約
-        state_summary = st.empty()
-        state_summary.write("要約中...") # 箱に案内表示書き込み
-        summarized_text = summarize_text(result_text)  # テキスト要約
-        st.write("【要約結果】")
-        state_summary.empty()  # 実行中表示の削除
-        st.write(summarized_text)
+            state = st.empty() 
+            state.write("要約中...") # 箱に案内表示書き込み
+            summarized_text = summarize_text(result_text)  # テキスト要約
+            st.write("【要約結果】")
+            state.empty()  # 実行中表示の削除
+            st.write(summarized_text)
 
-        # 翻訳
-        state_english = st.empty()
-        state_english.write("英語に翻訳中...") # 箱に案内表示書き込み
-        english_text = translate_to_english(summarized_text)
-        if english_text:  # 翻訳されたテキストが存在する場合のみ
-            st.write("【翻訳結果（英語）】")
-            state_english.empty()
-            st.write(english_text)
+            # 翻訳
+            state_summary = st.empty() 
+            state_summary.write("英語に翻訳中...") # 箱に案内表示書き込み
+            state_summary.empty()
+            english_text = translate_to_english(summarized_text)
+            if english_text:  # 翻訳されたテキストが存在する場合のみ
+                st.write("【翻訳結果（英語）】")
+                st.write(english_text)
+                english_text_prompt = english_text + ',and style is simple drawing, background color is white'
 
-        # 画像生成
-        state_image = st.empty()
-        state_image.write("画像生成中...") # 箱に案内表示書き込み
-        image = generate_and_display_image(english_text)
-        state_image.empty()
-        st.image(image)  # Streamlitのst.imageで画像を表示
 
-        # 出力結果を残したまま、次の出力を行う
-        st.session_state['output_history'].append((result_text, summarized_text, english_text, image))
+            # 画像生成
+            state_image = st.empty() 
+            state_image.write("画像生成中...") # 箱に案内表示書き込み
+            response = openai.Image.create(
+            prompt=english_text_prompt,
+            size="256x256",
+            quality="standard",
+            n=1,
+            )
+            state_image.empty()
+            # 生成した画像のURLを取得
+            image_url = response['data'][0]['url']
 
-    st.write("処理が完了しました。")
+            # 画像を表示
+            response = requests.get(image_url)
+            image = Image.open(BytesIO(response.content))
+            st.image(image)  # Streamlitのst.imageで画像を表示
+
+        st.session_state['output_history'].append((result_text, summarized_text, english_text, image_url))
+
+        st.write("処理が完了しました。")
