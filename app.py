@@ -40,10 +40,9 @@ def summarize_text(result_text):
     response = openai.ChatCompletion.create(
         model = "gpt-3.5-turbo",  # 使用するモデル
         messages = [
-            {"role": "system", "content": "以下の文章を要約してください:"},
+            {"role": "system", "content": "以下の文章を1文で簡潔に要約してください:"},
             {"role": "user", "content": result_text },
         ],
-        max_tokens = 100  # 最大トークン数
     )
     
     output_content = response.choices[0]["message"]["content"].strip() # 返って来たレスポンスの内容はresponse.choices[0]["message"]["content"].strip()に格納されているので、これをoutput_contentに代入
@@ -57,17 +56,35 @@ def translate_to_english(output_content):
             {"role": "system", "content": "以下の日本語のテキストを英語に翻訳してください:"},
             {"role": "user", "content": output_content},
         ],
-        max_tokens=100
+        temperature=0.2
     )
 
     english_text = response.choices[0]["message"]["content"].strip()
     return english_text # 戻り値
 
-# 画像生成と表示の関数
-def generate_and_display_image(english_text):
+# テキスト要約の関数
+def summarize_english_text(english_text):
+    response2 = openai.ChatCompletion.create(
+        model = "gpt-3.5-turbo",  # 使用するモデル
+        messages = [
+            {"role": "system", "content": "Summarize the following text in one english sentence:"},
+            {"role": "user", "content": english_text},
+        ],
+        temperature=0.2
+    )
+    
+    english_words = response2.choices[0]["message"]["content"].strip()
+    return english_words # 戻り値
 
+
+# 画像生成と表示の関数
+def generate_and_display_image(english_words):
+    
     # 画像生成用のプロンプト
-    image_prompt = english_text + ',and style is simple drawing, background color is white'
+    # image_prompt = english_text + ',and style is simple drawing, background color is white'
+    # image_prompt = f"A simple hand-drawing that visualizes the themes and concepts from the summarized text: '{english_text}' without displaying any literal text or letters. The illustration should be composed of simple, iconic lines that resemble hand-drawn with a felt-tip pen. The background is white, and the color scheme should primarily use black, with occasional accents in neon yellow and light grey only. The image needs to be visually intuitive, effectively representing the content of the summarized text through symbolic images and icons."
+    # image_prompt = english_text + ",and style is a very very simple single drawing that visualize a main keyword, white background, bold and thick lines that resemble hand-drawn with a black felt-tip pen, with some accents in neon yellow and light greyish blue, limited to three colors, focusing on creating a single impactful visual. "
+    image_prompt = english_words + "And style is a simple iconic drawing ,lines are bold and thick blacks , background color is white, some accents are neon yellow and light greyish blue"
     
     response = openai.Image.create(
         # model = "dall-e-3",
@@ -125,10 +142,18 @@ if st.sidebar.button('音声認識と画像生成を開始'):
             state_english.empty()
             st.write(english_text)
 
+        # 5wordsへの要約
+        state_summary2 = st.empty()
+        state_summary2.write("要約中...") # 箱に案内表示書き込み
+        summarized_english_text = summarize_english_text(english_text)  # テキスト要約
+        st.write("【要約結果（英語）】")
+        state_summary2.empty()  # 実行中表示の削除
+        st.write(summarized_english_text)
+
         # 画像生成
         state_image = st.empty()
         state_image.write("画像生成中...") # 箱に案内表示書き込み
-        image = generate_and_display_image(english_text)
+        image = generate_and_display_image(summarized_english_text)
         state_image.empty()
         st.image(image)  # Streamlitのst.imageで画像を表示
 
