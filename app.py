@@ -65,14 +65,16 @@ def translate_to_english(output_content):
 
 # 画像生成と表示の関数
 def generate_and_display_image(english_text):
-    image_prompt = '次の文章を画像で出力してください。' + '\n'+'文章:"""' + '\n'+ english_text + '\n'+'"""'
+
+    # 画像生成用のプロンプト
+    image_prompt = english_text + ',and style is simple drawing, background color is white'
+    
     response = openai.Image.create(
-        model = "dall-e-3",
+        # model = "dall-e-3",
         prompt = image_prompt,
-        # size="256x256",
-        # size="512x512",
-        size="1024x1024",
-        quality="hd",  # https://platform.openai.com/docs/guides/images/usage?lang=python&context=node
+        size="256x256",
+        # size="1024x1024",
+        quality="standard",  # https://platform.openai.com/docs/guides/images/usage?lang=python&context=node
         n=1,
     )
     image_url = response['data'][0]['url']
