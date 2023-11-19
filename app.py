@@ -100,7 +100,7 @@ def generate_and_display_image(summarized_english_text):
     return image # 戻り値
 
 # Streamlit表示
-st.title("スピードグラレコアプリ") # タイトル
+st.title("Speak ✌ Scene") # タイトル
 
 # サイドバーでのパラメータ設定
 st.sidebar.write("会議内容を要約して画像を生成するよ") # 案内表示
